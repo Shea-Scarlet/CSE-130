@@ -11,6 +11,6 @@ $(EXEC): $(OBJS)
 
 hello.o: hello.c
 	$(CC) $(CFLAGS) -c hello.c
-	
+
 clean:
 	rm -f $(EXEC) $(OBJS)
