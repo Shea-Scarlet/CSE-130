@@ -32,11 +32,11 @@ int main(int argc, char **argv)
 	
 	if (argc < 2 || !isdigit(*port_number))
 	{
-		print_usage(argv[0]);
+		//print_usage(argv[0]);
 		return 1;
 	}
 
-	if (port < 1 || port_number > 65535)
+	if (atoi(port_number) < 1 || atoi(port_number) > 65535)
 	{
 		fprintf(stderr, "Invalid Command\n");
 		return 1;
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	//creating a socket
 	
 	Listener_Socket my_socket;
-	int my_port = listener_init(sock, atoi(port_number));
+	int my_port = listener_init(&my_socket, atoi(port_number));
 	
 	
 	if (my_port != 0)
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 		int accept_socket = listener_accept(&my_socket);
 		read_until(accept_socket, cmd_buffer, sizeof cmd_buffer, NULL);
 		
-		int get_test = regexec(&regex_get, cmd_buffer, 0, NULL, 0);
+		//int get_test = regexec(&regex_get, cmd_buffer, 0, NULL, 0);
 		int put_test = regexec(&regex_put, cmd_buffer, 0, NULL, 0);
 		int location = regexec(&regex_location, cmd_buffer, 1, matches, 0);
 		int length = regexec(&regex_content_length, cmd_buffer, 1, matches2, 0);
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 		
 		if (put_test == 0 && location != 0)
 		{
-			print_usage(argv[0]);
+			//print_usage(argv[0]);
 			return 1;
 		}
 		else
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 		
 		if (put_test == 0 && length !=0)
 		{
-			print_usage(argv[0]);
+			//print_usage(argv[0]);
 			return 1;
 		}
 		else
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 		
 		if (put_test == 0 && body !=0)
 		{
-			print_usage(argv[0]);
+			//print_usage(argv[0]);
 			return 1;
 		}
 		else
@@ -136,9 +136,6 @@ int main(int argc, char **argv)
 			cmd.body = m_string;
 			printf("%s\n", cmd.body);
 		}
-		
-	
-		regfree(&regex_get, &regex_put, &regex_location, regex_content_length, &regex_body);
 		
 	}
 	
