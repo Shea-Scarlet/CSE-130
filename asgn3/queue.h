@@ -6,9 +6,6 @@
  * @author Andrew Quinn
  */
 
-#ifndef QUEUE_H
-#define QUEUE_H
-
 #pragma once
 
 #include <stdbool.h>
