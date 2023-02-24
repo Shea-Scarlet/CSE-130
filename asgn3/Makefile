@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -Wextra -Werror -pedantic
+CFLAGS = -Wall -Wextra -Werror -pedantic -pthread
 
 all: queue.o
 
