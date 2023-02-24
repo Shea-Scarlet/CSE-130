@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 typedef struct {
-    void** buffer;
+    void **buffer;
     int size;
     int start;
     int end;
@@ -14,9 +14,9 @@ typedef struct {
     pthread_cond_t full;
 } queue_t;
 
-queue_t* queue_new(int size) {
-    queue_t* q = malloc(sizeof(queue_t));
-    q->buffer = malloc(size * sizeof(void*));
+queue_t *queue_new(int size) {
+    queue_t *q = malloc(sizeof(queue_t));
+    q->buffer = malloc(size * sizeof(void *));
     q->size = size;
     q->start = 0;
     q->end = 0;
@@ -27,7 +27,7 @@ queue_t* queue_new(int size) {
     return q;
 }
 
-void queue_delete(queue_t** q) {
+void queue_delete(queue_t **q) {
     pthread_mutex_destroy(&(*q)->lock);
     pthread_cond_destroy(&(*q)->empty);
     pthread_cond_destroy(&(*q)->full);
@@ -36,7 +36,7 @@ void queue_delete(queue_t** q) {
     *q = NULL;
 }
 
-bool queue_push(queue_t* q, void* elem) {
+bool queue_push(queue_t *q, void *elem) {
     pthread_mutex_lock(&q->lock);
     while (q->count == q->size) {
         pthread_cond_wait(&q->full, &q->lock);
@@ -49,7 +49,7 @@ bool queue_push(queue_t* q, void* elem) {
     return true;
 }
 
-bool queue_pop(queue_t* q, void** elem) {
+bool queue_pop(queue_t *q, void **elem) {
     pthread_mutex_lock(&q->lock);
     while (q->count == 0) {
         pthread_cond_wait(&q->empty, &q->lock);
