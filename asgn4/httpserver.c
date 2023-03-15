@@ -214,6 +214,7 @@ void handle_request(conn_t *conn) {
         debug("Next request is not the same as current request");
     }
 
+    /*
     // read request from client
     char buf[1024];
     ssize_t n = read((int) conn, buf, sizeof(buf) - 1);
@@ -223,8 +224,10 @@ void handle_request(conn_t *conn) {
         return;
     }
     buf[n] = '\0';
+     */
 
     // determine request type
+    char buf[1024];
     const Request_t *request = NULL;
     for (int i = 0; i < NUM_REQUESTS; i++) {
         if (strstr(buf, request_get_str(requests[i])) == buf) {
@@ -235,7 +238,6 @@ void handle_request(conn_t *conn) {
 
     // handle request
     if (request == &REQUEST_GET) {
-        conn_t *conn = conn_new((int) conn);
         handle_get(conn);
         conn_delete((conn_t **) conn);
     } else if (request == &REQUEST_PUT) {
@@ -251,9 +253,7 @@ void handle_request(conn_t *conn) {
     // Log request
     log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), response_get_code(&RESPONSE_NOT_IMPLEMENTED),
               (const char *) conn_get_header(conn, "Request-Id"));
-
-
-    close((int) conn);
+    
 }
 
 void* worker_thread(void* arg) {
@@ -268,11 +268,6 @@ void* worker_thread(void* arg) {
         }
 
         printf("Processing request on thread %ld\n", pthread_self());
-
-        // handle request
-        handle_request(connfd);
-
-        close(connfd);
     }
 
     return NULL;
