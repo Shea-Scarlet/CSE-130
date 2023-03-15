@@ -65,13 +65,13 @@ void handle_get(conn_t *conn) {
     if (fd < 0) {
         if (errno == EACCES) {
             conn_send_response(conn, (const Response_t *) &RESPONSE_FORBIDDEN);
-            log_entry("GET", uri, RESPONSE_FORBIDDEN, (const char *) conn_get_request(conn));
+            log_entry("GET", uri, &RESPONSE_FORBIDDEN, (const char *) conn_get_request(conn));
         } else if (errno == ENOENT) {
             conn_send_response(conn, (const Response_t *) &RESPONSE_NOT_FOUND);
-            log_entry("GET", uri, RESPONSE_NOT_FOUND, (const char *) conn_get_request(conn));
+            log_entry("GET", uri, &RESPONSE_NOT_FOUND, (const char *) conn_get_request(conn));
         } else {
             conn_send_response(conn, (const Response_t *) &RESPONSE_INTERNAL_SERVER_ERROR);
-            log_entry("GET", uri, RESPONSE_INTERNAL_SERVER_ERROR, (const char *) conn_get_request(conn));
+            log_entry("GET", uri, &RESPONSE_INTERNAL_SERVER_ERROR, (const char *) conn_get_request(conn));
         }
         return;
     }
@@ -80,7 +80,7 @@ void handle_get(conn_t *conn) {
     struct stat st;
     if (fstat(fd, &st) < 0) {
         conn_send_response(conn, (const Response_t *) &RESPONSE_INTERNAL_SERVER_ERROR);
-        log_entry("GET", uri, RESPONSE_INTERNAL_SERVER_ERROR, (const char *) conn_get_request(conn));
+        log_entry("GET", uri, &RESPONSE_INTERNAL_SERVER_ERROR, (const char *) conn_get_request(conn));
         close(fd);
         return;
     }
@@ -88,14 +88,14 @@ void handle_get(conn_t *conn) {
     // 3. Check if the file is a directory
     if ((st.st_mode & S_IFMT) == S_IFDIR) {
         conn_send_response(conn, (const Response_t *) &RESPONSE_BAD_REQUEST);
-        log_entry("GET", uri, RESPONSE_BAD_REQUEST, (const char *) conn_get_request(conn));
+        log_entry("GET", uri, &RESPONSE_BAD_REQUEST, (const char *) conn_get_request(conn));
         close(fd);
         return;
     }
 
     // 4. Send the file
     conn_send_file(conn, fd, st.st_size);
-    log_entry("GET", uri, RESPONSE_OK, (const char *) conn_get_request(conn));
+    log_entry("GET", uri, &RESPONSE_OK, (const char *) conn_get_request(conn));
 
     close(fd);
 
@@ -113,7 +113,7 @@ void handle_unsupported(conn_t *conn) {
     conn_send_response(conn, (const Response_t *) &RESPONSE_NOT_IMPLEMENTED);
 
     // Log request
-    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), RESPONSE_NOT_IMPLEMENTED,
+    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), &RESPONSE_NOT_IMPLEMENTED,
               (const char *) conn_get_header(conn, "Request-Id"));
 
 }
@@ -157,7 +157,7 @@ void handle_put(conn_t *conn) {
     }
 
     // Log request
-    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), RESPONSE_NOT_IMPLEMENTED,
+    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), &RESPONSE_NOT_IMPLEMENTED,
               (const char *) conn_get_header(conn, "Request-Id"));
 
     out:
@@ -250,7 +250,7 @@ void handle_request(conn_t *conn) {
     }
 
     // Log request
-    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), RESPONSE_NOT_IMPLEMENTED,
+    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), &RESPONSE_NOT_IMPLEMENTED,
               (const char *) conn_get_header(conn, "Request-Id"));
 
 
