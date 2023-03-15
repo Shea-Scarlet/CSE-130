@@ -23,8 +23,8 @@
 #include <sys/stat.h>
 
 #define DEFAULT_THREADS 4
-#define QUEUE_SIZE SOMAXCONN * 4
-#define BUFSIZE 1024
+#define QUEUE_SIZE      SOMAXCONN * 4
+#define BUFSIZE         1024
 
 // Mutex for locking file writes
 pthread_mutex_t log_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -42,7 +42,7 @@ static void usage(char *progname) {
     fprintf(stderr, "Usage: %s [-t threads] <port>\n", progname);
 }
 
-void log_entry(const char* oper, const char* uri, int status_code, const char* request_id) {
+void log_entry(const char *oper, const char *uri, int status_code, const char *request_id) {
     pthread_mutex_lock(&log_lock);
     fprintf(stderr, "%s,%s,%d,%s\n", oper, uri, status_code, request_id);
     pthread_mutex_unlock(&log_lock);
@@ -65,12 +65,16 @@ void handle_get(conn_t *conn) {
     if (fd < 0) {
         if (errno == EACCES) {
             conn_send_response(conn, (const Response_t *) &RESPONSE_FORBIDDEN);
-            log_entry("GET", uri, response_get_code(&RESPONSE_FORBIDDEN), (const char *) conn_get_request(conn));        } else if (errno == ENOENT) {
+            log_entry("GET", uri, response_get_code(&RESPONSE_FORBIDDEN),
+                (const char *) conn_get_request(conn));
+        } else if (errno == ENOENT) {
             conn_send_response(conn, (const Response_t *) &RESPONSE_NOT_FOUND);
-            log_entry("GET", uri, response_get_code(&RESPONSE_NOT_FOUND), (const char *) conn_get_request(conn));
+            log_entry("GET", uri, response_get_code(&RESPONSE_NOT_FOUND),
+                (const char *) conn_get_request(conn));
         } else {
             conn_send_response(conn, (const Response_t *) &RESPONSE_INTERNAL_SERVER_ERROR);
-            log_entry("GET", uri, response_get_code(&RESPONSE_INTERNAL_SERVER_ERROR), (const char *) conn_get_request(conn));
+            log_entry("GET", uri, response_get_code(&RESPONSE_INTERNAL_SERVER_ERROR),
+                (const char *) conn_get_request(conn));
         }
         return;
     }
@@ -79,7 +83,8 @@ void handle_get(conn_t *conn) {
     struct stat st;
     if (fstat(fd, &st) < 0) {
         conn_send_response(conn, (const Response_t *) &RESPONSE_INTERNAL_SERVER_ERROR);
-        log_entry("GET", uri, response_get_code(&RESPONSE_INTERNAL_SERVER_ERROR), (const char *) conn_get_request(conn));
+        log_entry("GET", uri, response_get_code(&RESPONSE_INTERNAL_SERVER_ERROR),
+            (const char *) conn_get_request(conn));
         close(fd);
         return;
     }
@@ -87,7 +92,8 @@ void handle_get(conn_t *conn) {
     // 3. Check if the file is a directory
     if ((st.st_mode & S_IFMT) == S_IFDIR) {
         conn_send_response(conn, (const Response_t *) &RESPONSE_BAD_REQUEST);
-        log_entry("GET", uri, response_get_code(&RESPONSE_BAD_REQUEST), (const char *) conn_get_request(conn));
+        log_entry("GET", uri, response_get_code(&RESPONSE_BAD_REQUEST),
+            (const char *) conn_get_request(conn));
         close(fd);
         return;
     }
@@ -112,9 +118,9 @@ void handle_unsupported(conn_t *conn) {
     conn_send_response(conn, (const Response_t *) &RESPONSE_NOT_IMPLEMENTED);
 
     // Log request
-    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), response_get_code(&RESPONSE_NOT_IMPLEMENTED),
-              (const char *) conn_get_header(conn, "Request-Id"));
-
+    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn),
+        response_get_code(&RESPONSE_NOT_IMPLEMENTED),
+        (const char *) conn_get_header(conn, "Request-Id"));
 }
 
 void handle_put(conn_t *conn) {
@@ -156,10 +162,11 @@ void handle_put(conn_t *conn) {
     }
 
     // Log request
-    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), response_get_code(&RESPONSE_NOT_IMPLEMENTED),
-              (const char *) conn_get_header(conn, "Request-Id"));
+    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn),
+        response_get_code(&RESPONSE_NOT_IMPLEMENTED),
+        (const char *) conn_get_header(conn, "Request-Id"));
 
-    out:
+out:
     conn_send_response(conn, res);
     close(fd);
 
@@ -176,7 +183,6 @@ void handle_signal(int sig) {
         fflush(stderr);
         exit(0);
     }
-
 }
 
 void handle_request(conn_t *conn) {
@@ -251,14 +257,14 @@ void handle_request(conn_t *conn) {
     }
 
     // Log request
-    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn), response_get_code(&RESPONSE_NOT_IMPLEMENTED),
-              (const char *) conn_get_header(conn, "Request-Id"));
-    
+    log_entry((const char *) conn_get_request(conn), (const char *) conn_get_uri(conn),
+        response_get_code(&RESPONSE_NOT_IMPLEMENTED),
+        (const char *) conn_get_header(conn, "Request-Id"));
 }
 
-void* worker_thread(void* arg) {
+void *worker_thread(void *arg) {
     queue_t *q = (queue_t *) arg;
-    void* elem;
+    void *elem;
     while (1) {
         // get a connection from the queue
         int connfd = (intptr_t) queue_pop(q, &elem);
@@ -303,17 +309,15 @@ int main(int argc, char **argv) {
 
     while ((opt = getopt(argc, argv, "t:")) != -1) {
         switch (opt) {
-            case 't':
-                num_threads = atoi(optarg);
-                if (num_threads <= 0) {
-                    fprintf(stderr, "Invalid number of threads\n");
-                    usage(argv[0]);
-                    return EXIT_FAILURE;
-                }
-                break;
-            default:
+        case 't':
+            num_threads = atoi(optarg);
+            if (num_threads <= 0) {
+                fprintf(stderr, "Invalid number of threads\n");
                 usage(argv[0]);
                 return EXIT_FAILURE;
+            }
+            break;
+        default: usage(argv[0]); return EXIT_FAILURE;
         }
     }
 
@@ -351,7 +355,7 @@ int main(int argc, char **argv) {
 
     port = atoi(argv[optind]);
 
-    struct sockaddr_in serveraddr = {0};
+    struct sockaddr_in serveraddr = { 0 };
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serveraddr.sin_port = htons(port);
@@ -368,14 +372,14 @@ int main(int argc, char **argv) {
 
     printf("Server listening on port %d\n", port);
 
-        // create worker threads
-        pthread_t tid[num_threads];
-        for (int i = 0; i < num_threads; i++) {
-            if (pthread_create(&tid[i], NULL, worker_thread, q) != 0) {
-                perror("pthread_create");
-                exit(EXIT_FAILURE);
-            }
+    // create worker threads
+    pthread_t tid[num_threads];
+    for (int i = 0; i < num_threads; i++) {
+        if (pthread_create(&tid[i], NULL, worker_thread, q) != 0) {
+            perror("pthread_create");
+            exit(EXIT_FAILURE);
         }
+    }
 
     while (1) {
         client_fd = listener_accept(&listener);
@@ -404,10 +408,9 @@ int main(int argc, char **argv) {
         }
 
         close(client_fd);
-
     }
 
-// should never reach here
+    // should never reach here
     queue_delete(&q);
     exit(EXIT_FAILURE);
 
