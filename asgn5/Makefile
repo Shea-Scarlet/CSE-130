@@ -1,18 +1,16 @@
-CC=gcc
-CFLAGS=-c -Wall
-LDFLAGS=
-SOURCES=cacher.c
-OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=cacher
+CC = clang
+CFLAGS = -Wall -Wextra -Werror -Wpedantic
+LDFLAGS = -lm
+EXEC = cacher
+OBJS = cacher.o
 
-all: $(SOURCES) $(EXECUTABLE)
+all: $(EXEC)
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+$(EXEC): $(OBJS)
+	$(CC) $(LDFLAGS) -o $(EXEC) $(OBJS)
 
-.c.o:
-	$(CC) $(CFLAGS) $< -o $@
+cacher.o: cacher.c
+	$(CC) $(CFLAGS) -c cacher.c
 
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
-
+	rm -f $(EXEC) $(OBJS)
