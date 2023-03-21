@@ -5,79 +5,75 @@
 
 // Define a struct to hold the cache items
 typedef struct CacheItem {
-    char* data;                 // data stored in the cache item
-    int ref_bit;                // for clock eviction policy
-    struct CacheItem* next;     // pointer to the next cache item
+    char *data; // data stored in the cache item
+    int ref_bit; // for clock eviction policy
+    struct CacheItem *next; // pointer to the next cache item
 } CacheItem;
 
 // Define a struct to hold the cache
 typedef struct Cache {
-    int size;                   // maximum size of the cache
-    int num_items;              // current number of items in the cache
-    int compulsory_misses;      // count of compulsory misses
-    int capacity_misses;        // count of capacity misses
-    CacheItem* head;            // pointer to the first item in the cache
-    CacheItem* tail;            // pointer to the last item in the cache
-    int clock_hand;             // for clock eviction policy
+    int size; // maximum size of the cache
+    int num_items; // current number of items in the cache
+    int compulsory_misses; // count of compulsory misses
+    int capacity_misses; // count of capacity misses
+    CacheItem *head; // pointer to the first item in the cache
+    CacheItem *tail; // pointer to the last item in the cache
+    int clock_hand; // for clock eviction policy
 } Cache;
 
 // Function declarations
-Cache* create_cache(int size);
-void destroy_cache(Cache* cache);
-void print_summary(Cache* cache);
-char* read_line();
-int contains(CacheItem* item, char* data);
-CacheItem* remove_front(CacheItem* head);
-CacheItem* remove_first(CacheItem* head, char* data);
-CacheItem* append(CacheItem* head, char* data);
-int insert_fifo(Cache* cache, char* item_data);
-int insert_lru(Cache* cache, char* item_data);
-int insert_clock(Cache* cache, char* item_data);
+Cache *create_cache(int size);
+void destroy_cache(Cache *cache);
+void print_summary(Cache *cache);
+char *read_line();
+int contains(CacheItem *item, char *data);
+CacheItem *remove_front(CacheItem *head);
+CacheItem *remove_first(CacheItem *head, char *data);
+CacheItem *append(CacheItem *head, char *data);
+int insert_fifo(Cache *cache, char *item_data);
+int insert_lru(Cache *cache, char *item_data);
+int insert_clock(Cache *cache, char *item_data);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // Default values for options
     int size = 0;
-    char* policy = "-F";
+    char *policy = "-F";
 
     // Process command line arguments
     int opt;
     while ((opt = getopt(argc, argv, "-N:LFC")) != -1) {
         switch (opt) {
-            case 'N':
-                size = atoi(optarg);
-                break;
-            case 'L': policy = "-L"; break;
-            case 'F': policy = "-F"; break;
-            case 'C': policy = "-C"; break;
-            default:
-                fprintf(stderr, "Error: Invalid command line arguments\n");
-                return 1;
+        case 'N': size = atoi(optarg); break;
+        case 'L': policy = "-L"; break;
+        case 'F': policy = "-F"; break;
+        case 'C': policy = "-C"; break;
+        default: fprintf(stderr, "Error: Invalid command line arguments\n"); return 1;
         }
     }
-	
+
     // Create the cache
-    Cache* cache = create_cache(size);
+    Cache *cache = create_cache(size);
 
     // Read input and process each line
-    char* line = read_line();
+    char *line = read_line();
     if (line != NULL) {
-    	char* item = strtok(line, "\n");
-    	while (item != NULL) {
-		    int result;
-		    if (strcmp(policy, "-L") == 0) {
-		        result = insert_lru(cache, item);
-		    } else if (strcmp(policy, "-C") == 0) {
-		        result = insert_clock(cache, item);
-		    } else {
-		        result = insert_fifo(cache, item);
-		    }
-		    if (result == 0) {
-		        printf("HIT\n");
-		    } else {
-		        printf("MISS\n");
-		    }
-		    item = strtok(NULL, "\n");
-		}
+        char *item = strtok(line, "\n");
+        while (item != NULL) {
+            int result;
+            if (strcmp(policy, "-L") == 0) {
+                result = insert_lru(cache, item);
+            } else if (strcmp(policy, "-C") == 0) {
+                result = insert_clock(cache, item);
+            } else {
+                result = insert_fifo(cache, item);
+            }
+            if (result == 0) {
+                printf("HIT\n");
+            } else {
+                printf("MISS\n");
+            }
+            item = strtok(NULL, "\n");
+        }
     }
 
     // Print summary and clean up
@@ -87,8 +83,8 @@ int main(int argc, char* argv[]) {
 }
 
 // Function to create a new cache
-Cache* create_cache(int size) {
-    Cache* cache = malloc(sizeof(Cache));
+Cache *create_cache(int size) {
+    Cache *cache = malloc(sizeof(Cache));
     cache->size = size;
     cache->num_items = 0;
     cache->compulsory_misses = 0;
@@ -100,10 +96,10 @@ Cache* create_cache(int size) {
 }
 
 // Function to free the memory used by a cache
-void destroy_cache(Cache* cache) {
-    CacheItem* current_item = cache->head;
+void destroy_cache(Cache *cache) {
+    CacheItem *current_item = cache->head;
     while (current_item != NULL) {
-        CacheItem* next_item = current_item->next;
+        CacheItem *next_item = current_item->next;
         free(current_item);
         current_item = next_item;
     }
@@ -111,13 +107,13 @@ void destroy_cache(Cache* cache) {
 }
 
 // Function to print a summary of the cache's performance
-void print_summary(Cache* cache) {
+void print_summary(Cache *cache) {
     printf("Compulsory misses: %d\n", cache->compulsory_misses);
     printf("Capacity misses: %d\n", cache->capacity_misses);
 }
 
 // Function to read a line of input from stdin
-char* read_line() {
+char *read_line() {
     // Read a line from stdin and return it as a string
     int buffer_size = 1024;
     char *buffer = malloc(buffer_size);
@@ -141,30 +137,30 @@ char* read_line() {
 }
 
 // Function to check if a cache item contains a given string
-int contains(CacheItem* item, char* data) {
+int contains(CacheItem *item, char *data) {
     return (strcmp(item->data, data) == 0);
 }
 
 // Function to remove the front item from a linked list
-CacheItem* remove_front(CacheItem* head) {
+CacheItem *remove_front(CacheItem *head) {
     if (head == NULL) {
         return NULL;
     }
-    CacheItem* new_head = head->next;
+    CacheItem *new_head = head->next;
     free(head);
     return new_head;
 }
 
 // Function to remove the first occurrence of a given string from a linked list
-CacheItem* remove_first(CacheItem* head, char* data) {
+CacheItem *remove_first(CacheItem *head, char *data) {
     if (head == NULL) {
         return NULL;
     }
     if (contains(head, data)) {
         return remove_front(head);
     }
-    CacheItem* prev_item = head;
-    CacheItem* current_item = head->next;
+    CacheItem *prev_item = head;
+    CacheItem *current_item = head->next;
     while (current_item != NULL) {
         if (contains(current_item, data)) {
             prev_item->next = current_item->next;
@@ -178,15 +174,15 @@ CacheItem* remove_first(CacheItem* head, char* data) {
 }
 
 // Function to append a new item to the end of a linked list
-CacheItem* append(CacheItem* head, char* data) {
-    CacheItem* new_item = malloc(sizeof(CacheItem));
+CacheItem *append(CacheItem *head, char *data) {
+    CacheItem *new_item = malloc(sizeof(CacheItem));
     new_item->data = strdup(data);
     new_item->ref_bit = 0;
     new_item->next = NULL;
     if (head == NULL) {
         return new_item;
     }
-    CacheItem* current_item = head;
+    CacheItem *current_item = head;
     while (current_item->next != NULL) {
         current_item = current_item->next;
     }
@@ -195,8 +191,8 @@ CacheItem* append(CacheItem* head, char* data) {
 }
 
 // Function to insert an item using the FIFO policy
-int insert_fifo(Cache* cache, char* item_data) {
-    CacheItem* current_item = cache->head;
+int insert_fifo(Cache *cache, char *item_data) {
+    CacheItem *current_item = cache->head;
     while (current_item != NULL) {
         if (contains(current_item, item_data)) {
             return 0; //Hit
@@ -217,12 +213,12 @@ int insert_fifo(Cache* cache, char* item_data) {
 }
 
 // Function to insert an item using the LRU policy
-int insert_lru(Cache* cache, char* item_data) {
+int insert_lru(Cache *cache, char *item_data) {
     CacheItem *current_item = cache->head;
     CacheItem *prev_item = NULL;
     while (current_item != NULL) {
         if (contains(current_item, item_data)) {
-// Item is already in cache, move it to the front
+            // Item is already in cache, move it to the front
             if (prev_item != NULL) {
                 prev_item->next = current_item->next;
                 current_item->next = cache->head;
@@ -241,7 +237,7 @@ int insert_lru(Cache* cache, char* item_data) {
     cache->head = new_item;
     cache->num_items++;
 
-// If cache is full, remove the last item
+    // If cache is full, remove the last item
     if (cache->num_items > cache->size) {
         CacheItem *last_item = cache->head;
         while (last_item->next != NULL) {
@@ -258,21 +254,21 @@ int insert_lru(Cache* cache, char* item_data) {
         cache->compulsory_misses++;
     }
 
-    return 1;  // Miss
+    return 1; // Miss
 }
 
 // Function to insert an item using the clock policy
-int insert_clock(Cache* cache, char* item_data) {
-    CacheItem* current_item = cache->head;
-    CacheItem* prev_item = NULL;
+int insert_clock(Cache *cache, char *item_data) {
+    CacheItem *current_item = cache->head;
+    CacheItem *prev_item = NULL;
     while (current_item != NULL) {
         if (contains(current_item, item_data)) {
-// Item is already in cache, set its reference bit to 1
+            // Item is already in cache, set its reference bit to 1
             current_item->ref_bit = 1;
             return 0; // Hit
         }
         if (current_item->ref_bit == 0) {
-// Item has not been referenced recently, replace it
+            // Item has not been referenced recently, replace it
             current_item->data = item_data;
             current_item->ref_bit = 1;
             cache->clock_hand = (cache->clock_hand + 1) % cache->size;
@@ -280,7 +276,7 @@ int insert_clock(Cache* cache, char* item_data) {
         }
         prev_item = current_item;
         current_item = current_item->next;
-// If the clock hand makes a full cycle, reset all reference bits to 0
+        // If the clock hand makes a full cycle, reset all reference bits to 0
         if (current_item == NULL) {
             current_item = cache->head;
             while (current_item != NULL) {
@@ -291,7 +287,7 @@ int insert_clock(Cache* cache, char* item_data) {
     }
     // Item is not in cache and there is an empty slot, add it to the current position of the clock hand
     if (cache->num_items < cache->size) {
-        CacheItem* new_item = malloc(sizeof(CacheItem));
+        CacheItem *new_item = malloc(sizeof(CacheItem));
         new_item->data = item_data;
         new_item->ref_bit = 1;
         if (prev_item == NULL) {
@@ -301,15 +297,15 @@ int insert_clock(Cache* cache, char* item_data) {
         }
         new_item->next = current_item;
         cache->num_items++;
-        return 1;  // Miss
+        return 1; // Miss
     }
 
-// Item is not in cache and all slots are full, replace the first item with ref_bit = 0 after the clock hand
+    // Item is not in cache and all slots are full, replace the first item with ref_bit = 0 after the clock hand
     current_item = cache->head;
     prev_item = NULL;
     while (current_item != NULL) {
         if (current_item->ref_bit == 0 && contains(current_item, item_data) == 0) {
-            CacheItem* new_item = malloc(sizeof(CacheItem));
+            CacheItem *new_item = malloc(sizeof(CacheItem));
             new_item->data = item_data;
             new_item->ref_bit = 1;
             if (prev_item == NULL) { // If the item to be replaced is the head
@@ -327,13 +323,13 @@ int insert_clock(Cache* cache, char* item_data) {
         prev_item = current_item;
         current_item = current_item->next;
     }
-// If no item can be replaced, replace the first item with ref_bit = 0 after the clock hand
+    // If no item can be replaced, replace the first item with ref_bit = 0 after the clock hand
     cache->clock_hand = (cache->clock_hand + 1) % cache->size;
     current_item = cache->head;
     prev_item = NULL;
     while (current_item != NULL) {
         if (current_item->ref_bit == 0 && contains(current_item, item_data) == 0) {
-            CacheItem* new_item = malloc(sizeof(CacheItem));
+            CacheItem *new_item = malloc(sizeof(CacheItem));
             new_item->data = item_data;
             new_item->ref_bit = 1;
             if (prev_item == NULL) { // If the item to be replaced is the head
@@ -351,7 +347,7 @@ int insert_clock(Cache* cache, char* item_data) {
         prev_item = current_item;
         current_item = current_item->next;
     }
-// If no item can be replaced, return 0 indicating a capacity miss
+    // If no item can be replaced, return 0 indicating a capacity miss
     cache->capacity_misses++;
     return 0;
 }
